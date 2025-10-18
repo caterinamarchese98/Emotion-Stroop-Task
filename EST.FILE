@@ -1,0 +1,145 @@
+            <td>${t.responseTime !== null ? t.responseTime + ' ms' : '-'}</td>
+            <td>${t.correct ? 'Yes' : 'No'}</td>
+            <td>${t.block || 'practice'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('results-content').innerHTML = `
+        <div class="summary-box">
+          <h4>Overall Performance:</h4>
+          <p>Total trials: ${allTrials.length}</p>
+          <p>Responded: ${responded.length}</p>
+          <p>Accuracy: ${accuracy}%</p>
+          <p>Average RT (correct): ${avgRT} ms</p>
+        </div>
+
+        <div class="summary-box">
+          <h4>Performance by Word Type:</h4>
+          <p><strong>Emotional Words:</strong> ${emotionalResponded.length} responded, ${emotionalAccuracy}% accuracy, ${emotionalAvgRT} ms average RT</p>
+          <p><strong>Neutral Words:</strong> ${neutralResponded.length} responded, ${neutralAccuracy}% accuracy, ${neutralAvgRT} ms average RT</p>
+        </div>
+
+        <h4>Trial Details:</h4>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Word</th>
+              <th>Type</th>
+              <th>Language</th>
+              <th>Color</th>
+              <th>Response</th>
+              <th>RT</th>
+              <th>Correct</th>
+              <th>Block</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      document.getElementById('results').style.display = 'block';
+    }
+
+    function clearCanvas() { 
+      background(255); 
+    }
+    
+    function drawWord(word, color) {
+      clearCanvas();
+      fill(color);
+      textSize(48);
+      text(word, width / 2, height / 2);
+      redraw();
+    }
+
+    // Setup function for p5.js
+    function setup() {
+      canvas = createCanvas(600, 200);
+      canvas.parent('canvas-container');
+      textAlign(CENTER, CENTER);
+      textSize(48);
+      noLoop();
+    }
+
+    // Key pressed function for p5.js
+    function keyPressed() {
+      if ((state === 'initial-trial' || state === 'experiment') && fixationShown) {
+        const k = key.toLowerCase();
+        if (colorKeysMap.red === k || colorKeysMap.yellow === k || colorKeysMap.blue === k) {
+          const rt = millis() - startTime;
+          processTrialResult(k, rt);
+        }
+      }
+    }
+
+    // Event listeners
+    document.getElementById('email-submit-btn').addEventListener('click', () => {
+      const email = document.getElementById('email-input').value.trim();
+      const errorDiv = document.getElementById('email-error');
+
+      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+      if (isValidEmail) {
+        window.participantEmail = email;
+        errorDiv.style.display = 'none';
+        document.getElementById('email-section').style.display = 'none';
+        document.getElementById('intro').style.display = 'block';
+        
+        // Start the initial timer
+        let initialTime = 60; // 1 minute
+        const timerElement = document.getElementById('initial-timer');
+        
+        timerInterval = setInterval(() => {
+          initialTime--;
+          const minutes = Math.floor(initialTime / 60);
+          const seconds = initialTime % 60;
+          timerElement.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+          
+          if (initialTime <= 0) {
+            clearInterval(timerInterval);
+            startInitialTrialBlock();
+          }
+        }, 1000);
+        
+        // Add event listener for the skip button
+        document.getElementById('skip-initial-timer').addEventListener('click', () => {
+          clearInterval(timerInterval);
+          startInitialTrialBlock();
+        });
+      } else {
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (e.target && e.target.id === 'download-csv') {
+        const header = ['Trial', 'Word', 'Type', 'Language', 'Color', 'Response', 'RT (ms)', 'Correct', 'Block'];
+        
+        const rows = allTrials.map((t, i) => [
+          i + 1,
+          `"${t.word}"`,
+          t.type,
+          t.lang || '',
+          t.color,
+          t.responseKey || '',
+          t.responseTime !== null ? t.responseTime : '',
+          t.correct ? 'Yes' : 'No',
+          t.block || 'practice'
+        ]);
+        
+        const csvContent = [header, ...rows].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'stroop_results.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    });
+  </script>
+</body>
+</html>
