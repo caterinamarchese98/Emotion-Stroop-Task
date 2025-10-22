@@ -386,7 +386,7 @@
             document.getElementById('message-screen').style.display = 'block';
             
             // Show timer for break between trial blocks
-            let breakTime = 30; // 1 minute
+            let breakTime = 60; // 1 minute
             document.getElementById('message-screen').innerHTML = `
               <p><strong>Trial Block ${currentBlock} complete.</strong></p>
               <p>Next block will start in:</p>
@@ -437,7 +437,7 @@
             document.getElementById('message-screen').style.display = 'block';
             
             // Show timer for break between experimental blocks
-            let breakTime = 30; // 1 minute
+            let breakTime = 60; // 1 minute
             document.getElementById('message-screen').innerHTML = `
               <p><strong>Block ${realBlockIndex} complete.</strong></p>
               <p>Next block will start in:</p>
@@ -695,7 +695,7 @@
         document.getElementById('intro').style.display = 'block';
         
         // Start the initial timer
-        let initialTime = 60; // 2 minutes
+        let initialTime = 120; // 2 minutes
         const timerElement = document.getElementById('initial-timer');
         
         timerInterval = setInterval(() => {
@@ -751,4 +751,5 @@
   </script>
 </body>
 </html>
+
 
