@@ -21,6 +21,29 @@
       width: 90%;
       max-width: 800px;
       text-align: center;
+      position: relative;
+    }
+    .language-switcher {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    .language-btn {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 5px;
+      transition: all 0.3s;
+    }
+    .language-btn:hover {
+      background: #2980b9;
+    }
+    .language-btn.active {
+      background: #2c3e50;
     }
     h1 { color: #2c3e50; margin-bottom: 20px; }
     h2 { color: #3498db; margin-top: 25px; }
@@ -145,11 +168,17 @@
 </head>
 <body>
  <div id="container">
-    <h1>Emotional Stroop Task</h1>
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+      <button id="lang-en" class="language-btn active">EN</button>
+      <button id="lang-sv" class="language-btn">SV</button>
+    </div>
+
+    <h1 id="main-title">Emotional Stroop Task</h1>
 
     <!-- Email Entry Section -->
     <div id="email-section">
-      <p>
+      <p id="email-instruction">
         Hi, welcome back for the second part of the experiment.<br>
         In this section, you will be required to perform a Stroop Task.<br>
         Please enter the email address you used in the Multilingualism and Emotional Questionnaire (MEQ):
@@ -163,19 +192,21 @@
     <!-- Intro -->
     <div id="intro" style="display: none;">
       <div class="instructions">
-        <p>This study involves categorizing the ink color of words as quickly and accurately as possible.</p>
-        <p><strong>Procedure:</strong> You will see words in different colors. Your task is to indicate the color of the <strong>ink</strong>, not the word itself.</p>
-        <p>Press <span class="key-instruction red-key">Z</span> for <span style="color: #e74c3c;">RED</span>,
-           <span class="key-instruction yellow-key">V</span> for <span style="color: #f1c40f;">YELLOW</span>, and
-           <span class="key-instruction blue-key">M</span> for <span style="color: #2980b9;">BLUE</span>.</p>
-        <p><em>First, you'll complete 4 short practice blocks.</em></p>
+        <p id="intro-description">This study involves categorizing the ink color of words as quickly and accurately as possible.</p>
+        <p><strong id="procedure-title">Procedure:</strong> <span id="procedure-text">You will see words in different colors. Your task is to indicate the color of the <strong>ink</strong>, not the word itself.</span></p>
+        <p id="key-instructions">
+          Press <span class="key-instruction red-key">Z</span> for <span style="color: #e74c3c;">RED</span>,
+          <span class="key-instruction yellow-key">V</span> for <span style="color: #f1c40f;">YELLOW</span>, and
+          <span class="key-instruction blue-key">M</span> for <span style="color: #2980b9;">BLUE</span>.
+        </p>
+        <p><em id="practice-note">First, you'll complete 4 short practice blocks.</em></p>
       </div>
       
       <!-- Timer for initial instructions -->
       <div id="initial-timer-container" class="timer-container">
-        <p>Please take a moment to review the instructions and remember the keys.</p>
-        <div id="initial-timer" class="timer">01:00</div>
-        <p>The experiment will start automatically when the timer reaches zero.</p>
+        <p id="timer-instruction">Please take a moment to review the instructions and remember the keys.</p>
+        <div id="initial-timer" class="timer">02:00</div>
+        <p id="timer-note">The experiment will start automatically when the timer reaches zero.</p>
         <button id="skip-initial-timer">Start Now</button>
       </div>
     </div>
@@ -190,9 +221,9 @@
       <div id="canvas-container"></div>
       <div id="feedback" class="feedback"></div>
       <div id="results" class="results" style="display: none;">
-        <h2>Experiment Complete!</h2>
-        <p>Thank you for your participation.</p>
-        <h3>Summary Results</h3>
+        <h2 id="complete-title">Experiment Complete!</h2>
+        <p id="thank-you-text">Thank you for your participation.</p>
+        <h3 id="summary-title">Summary Results</h3>
         <div id="results-content"></div>
         <button id="download-csv" style="margin-top: 15px;">Download CSV</button>
       </div>
@@ -200,6 +231,118 @@
   </div>
 
   <script>
+    // Language texts
+    const translations = {
+      en: {
+        mainTitle: "Emotional Stroop Task",
+        emailInstruction: "Hi, welcome back for the second part of the experiment.<br>In this section, you will be required to perform a Stroop Task.<br>Please enter the email address you used in the Multilingualism and Emotional Questionnaire (MEQ):",
+        emailPlaceholder: "your.email@example.com",
+        emailError: "Please enter a valid email address.",
+        continueBtn: "Continue",
+        introDescription: "This study involves categorizing the ink color of words as quickly and accurately as possible.",
+        procedureTitle: "Procedure:",
+        procedureText: "You will see words in different colors. Your task is to indicate the color of the <strong>ink</strong>, not the word itself.",
+        keyInstructions: "Press <span class='key-instruction red-key'>Z</span> for <span style='color: #e74c3c;'>RED</span>, <span class='key-instruction yellow-key'>V</span> for <span style='color: #f1c40f;'>YELLOW</span>, and <span class='key-instruction blue-key'>M</span> for <span style='color: #2980b9;'>BLUE</span>.",
+        practiceNote: "First, you'll complete 4 short practice blocks.",
+        timerInstruction: "Please take a moment to review the instructions and remember the keys.",
+        timerNote: "The experiment will start automatically when the timer reaches zero.",
+        startNowBtn: "Start Now",
+        trialComplete: "Trial Block complete.",
+        nextBlockStarts: "Next block will start in:",
+        breakReminder: "Reminder:",
+        nextTrialBtn: "Start Next Trial Block Now",
+        initialTrialsDone: "The initial trial blocks are done.",
+        realExperimentStarts: "The real experiment will start now.",
+        startRealBtn: "Start Real Experiment",
+        blockComplete: "Block complete.",
+        startNextBlock: "Start Next Block Now",
+        completeTitle: "Experiment Complete!",
+        thankYouText: "Thank you for your participation.",
+        summaryTitle: "Summary Results",
+        downloadCSV: "Download CSV",
+        overallPerformance: "Overall Performance:",
+        totalTrials: "Total trials:",
+        responded: "Responded:",
+        accuracy: "Accuracy:",
+        averageRT: "Average RT (correct):",
+        performanceByType: "Performance by Word Type:",
+        emotionalWords: "Emotional Words:",
+        neutralWords: "Neutral Words:",
+        trialDetails: "Trial Details:",
+        trialNumber: "#",
+        word: "Word",
+        type: "Type",
+        language: "Language",
+        color: "Color",
+        response: "Response",
+        rt: "RT",
+        correct: "Correct",
+        block: "Block",
+        yes: "Yes",
+        no: "No",
+        practice: "practice",
+        emotional: "emotional",
+        neutral: "neutral",
+        red: "RED",
+        yellow: "YELLOW",
+        blue: "BLUE"
+      },
+      sv: {
+        mainTitle: "Emotionell Stroop Uppgift",
+        emailInstruction: "Hej, välkommen tillbaka för den andra delen av experimentet.<br>I denna del kommer du att utföra en Stroop-uppgift.<br>Ange e-postadressen du använde i flerspråkighets- och känslofrågeformuläret (MEQ):",
+        emailPlaceholder: "din.epost@exempel.com",
+        emailError: "Vänligen ange en giltig e-postadress.",
+        continueBtn: "Fortsätt",
+        introDescription: "Denna studie innebär att kategorisera bläckfärgen på ord så snabbt och korrekt som möjligt.",
+        procedureTitle: "Procedur:",
+        procedureText: "Du kommer att se ord i olika färger. Din uppgift är att ange <strong>bläckfärgens</strong> färg, inte själva ordet.",
+        keyInstructions: "Tryck <span class='key-instruction red-key'>Z</span> för <span style='color: #e74c3c;'>RÖD</span>, <span class='key-instruction yellow-key'>V</span> för <span style='color: #f1c40f;'>GUL</span>, och <span class='key-instruction blue-key'>M</span> för <span style='color: #2980b9;'>BLÅ</span>.",
+        practiceNote: "Först kommer du att genomföra 4 korta övningsblock.",
+        timerInstruction: "Ta en stund att gå igenom instruktionerna och kom ihåg tangenterna.",
+        timerNote: "Experimentet startar automatiskt när timern når noll.",
+        startNowBtn: "Starta Nu",
+        trialComplete: "Övningsblock klar.",
+        nextBlockStarts: "Nästa block startar om:",
+        breakReminder: "Påminnelse:",
+        nextTrialBtn: "Starta Nästa Övningsblock Nu",
+        initialTrialsDone: "De inledande övningsblocket är klara.",
+        realExperimentStarts: "Det riktiga experimentet börjar nu.",
+        startRealBtn: "Starta Riktigt Experiment",
+        blockComplete: "Block klar.",
+        startNextBlock: "Starta Nästa Block Nu",
+        completeTitle: "Experimentet Avslutat!",
+        thankYouText: "Tack för din medverkan.",
+        summaryTitle: "Sammanfattande Resultat",
+        downloadCSV: "Ladda ner CSV",
+        overallPerformance: "Övergripande Prestanda:",
+        totalTrials: "Totalt antal försök:",
+        responded: "Svarade:",
+        accuracy: "Noggrannhet:",
+        averageRT: "Genomsnittlig RT (korrekt):",
+        performanceByType: "Prestanda efter Ordtyp:",
+        emotionalWords: "Känslomässiga Ord:",
+        neutralWords: "Neutrala Ord:",
+        trialDetails: "Försöksdetaljer:",
+        trialNumber: "#",
+        word: "Ord",
+        type: "Typ",
+        language: "Språk",
+        color: "Färg",
+        response: "Svar",
+        rt: "RT",
+        correct: "Korrekt",
+        block: "Block",
+        yes: "Ja",
+        no: "Nej",
+        practice: "övning",
+        emotional: "känslomässig",
+        neutral: "neutral",
+        red: "RÖD",
+        yellow: "GUL",
+        blue: "BLÅ"
+      }
+    };
+
     const emotionWords = {
       sv: ["nervös", "sorg", "upprörd", "girighet", "ångest", "avundsjuka", "ensam", "rädd", "rädsla", "panik", "arg", "äcklad", "deprimerad", "galen", "oroad"],
       en: ["nervous", "grief", "upset", "greed", "anxiety", "jealousy", "lonely", "scared", "afraid", "panic", "angry", "disgusted", "depressed", "mad", "troubled"],
@@ -227,6 +370,36 @@
     let canvas;
     let allTrials = []; // Store all trials for final results
     let timerInterval = null; // For managing the timer intervals
+    let currentLanguage = 'en'; // Default language
+
+    // Function to update all text content based on current language
+    function updateLanguage(lang) {
+      currentLanguage = lang;
+      const t = translations[lang];
+      
+      // Update all text elements
+      document.getElementById('main-title').textContent = t.mainTitle;
+      document.getElementById('email-instruction').innerHTML = t.emailInstruction;
+      document.getElementById('email-input').placeholder = t.emailPlaceholder;
+      document.getElementById('email-error').textContent = t.emailError;
+      document.getElementById('email-submit-btn').textContent = t.continueBtn;
+      document.getElementById('intro-description').textContent = t.introDescription;
+      document.getElementById('procedure-title').textContent = t.procedureTitle;
+      document.getElementById('procedure-text').innerHTML = t.procedureText;
+      document.getElementById('key-instructions').innerHTML = t.keyInstructions;
+      document.getElementById('practice-note').textContent = t.practiceNote;
+      document.getElementById('timer-instruction').textContent = t.timerInstruction;
+      document.getElementById('timer-note').textContent = t.timerNote;
+      document.getElementById('skip-initial-timer').textContent = t.startNowBtn;
+      document.getElementById('complete-title').textContent = t.completeTitle;
+      document.getElementById('thank-you-text').textContent = t.thankYouText;
+      document.getElementById('summary-title').textContent = t.summaryTitle;
+      document.getElementById('download-csv').textContent = t.downloadCSV;
+      
+      // Update language buttons
+      document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+      document.getElementById('lang-sv').classList.toggle('active', lang === 'sv');
+    }
 
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -316,8 +489,8 @@
 
       // Create separate blocks for emotional and neutral words
       window.realExperimentBlocks = [
-        {trials: emotionTrials, type: 'emotional', name: 'Emotional Words Block'},
-        {trials: neutralTrials, type: 'neutral', name: 'Neutral Words Block'}
+        {trials: emotionTrials, type: 'emotional', name: currentLanguage === 'en' ? 'Emotional Words Block' : 'Känslomässiga Ord Block'},
+        {trials: neutralTrials, type: 'neutral', name: currentLanguage === 'en' ? 'Neutral Words Block' : 'Neutrala Ord Block'}
       ];
       
       window.realBlockIndex = 0;
@@ -362,7 +535,7 @@
         trial.responseTime = rt;
         trial.correct = (keyColorMap[key] === trial.color);
         if (!trial.correct) {
-          document.getElementById('feedback').textContent = 'ERROR';
+          document.getElementById('feedback').textContent = currentLanguage === 'en' ? 'ERROR' : 'FEL';
           document.getElementById('feedback').className = 'feedback error';
           errorTimeout = setTimeout(() => advanceToNextTrial(), 750);
           return;
@@ -387,15 +560,14 @@
             
             // Show timer for break between trial blocks
             let breakTime = 60; // 1 minute
+            const t = translations[currentLanguage];
             document.getElementById('message-screen').innerHTML = `
-              <p><strong>Trial Block ${currentBlock} complete.</strong></p>
-              <p>Next block will start in:</p>
+              <p><strong>${t.trialComplete}</strong></p>
+              <p>${t.nextBlockStarts}</p>
               <div id="break-timer" class="timer">00:${breakTime < 10 ? '0' + breakTime : breakTime}</div>
-              <p>Reminder:</p>
-              <p>Press <span class="key-instruction red-key">Z</span> for <span style="color: #e74c3c;">RED</span>,
-              <span class="key-instruction yellow-key">V</span> for <span style="color: #f1c40f;">YELLOW</span>, and 
-              <span class="key-instruction blue-key">M</span> for <span style="color: #2980b9;">BLUE</span>.</p>
-              <button id="next-trial-btn">Start Next Trial Block Now</button>
+              <p>${t.breakReminder}</p>
+              <p>${t.keyInstructions}</p>
+              <button id="next-trial-btn">${t.nextTrialBtn}</button>
             `;
             
             // Start the break timer
@@ -419,10 +591,11 @@
             state = 'message';
             document.getElementById('experiment').style.display = 'none';
             document.getElementById('message-screen').style.display = 'block';
+            const t = translations[currentLanguage];
             document.getElementById('message-screen').innerHTML = `
-              <p><strong>The initial trial blocks are done.</strong></p>
-              <p>The real experiment will start now.</p>
-              <button id="start-real-btn">Start Real Experiment</button>
+              <p><strong>${t.initialTrialsDone}</strong></p>
+              <p>${t.realExperimentStarts}</p>
+              <button id="start-real-btn">${t.startRealBtn}</button>
             `;
             document.getElementById('start-real-btn').addEventListener('click', startRealExperiment);
             return;
@@ -438,11 +611,13 @@
             
             // Show timer for break between experimental blocks
             let breakTime = 60; // 1 minute
+            const t = translations[currentLanguage];
+
             document.getElementById('message-screen').innerHTML = `
-              <p><strong>Block ${realBlockIndex} complete.</strong></p>
-              <p>Next block will start in:</p>
+              <p><strong>${t.blockComplete}</strong></p>
+              <p>${t.nextBlockStarts}</p>
               <div id="break-timer" class="timer">00:${breakTime < 10 ? '0' + breakTime : breakTime}</div>
-              <button id="start-next-real-block">Start Next Block Now</button>
+              <button id="start-next-real-block">${t.startNextBlock}</button>
             `;
             
             // Start the break timer
@@ -489,7 +664,7 @@
       totalTrials = trials.length;
       currentTrialIndex = 0;
       updateProgressBar();
-      // Update block info display
+      // Update block info display with current language
       document.getElementById('block-info').textContent = realExperimentBlocks[realBlockIndex].name;
       showFixation();
     }
@@ -545,7 +720,8 @@
                 neutralAccuracy: neutralAccuracy,
                 neutralAvgRT: neutralAvgRT
             },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            language: currentLanguage
         };
         
         console.log('Sending data to LimeSurvey:', data);
@@ -593,51 +769,53 @@
       const neutralAccuracy = neutralResponded.length > 0 ? (neutralCorrect.length / neutralResponded.length * 100).toFixed(1) : 0;
       const neutralAvgRT = neutralCorrect.length > 0 ? (neutralCorrect.map(t => t.responseTime).reduce((a, b) => a + b) / neutralCorrect.length).toFixed(0) : 'N/A';
 
-      const rows = allTrials.map((t, i) => {
-        const rowClass = t.type === 'emotional' ? 'word-type-emotional' : 'word-type-neutral';
+      const t = translations[currentLanguage];
+
+      const rows = allTrials.map((trial, i) => {
+        const rowClass = trial.type === 'emotional' ? 'word-type-emotional' : 'word-type-neutral';
         return `
           <tr class="${rowClass}">
             <td>${i + 1}</td>
-            <td>${t.word}</td>
-            <td>${t.type}</td>
-            <td>${t.lang || '-'}</td>
-            <td>${t.color}</td>
-            <td>${t.responseKey || '-'}</td>
-            <td>${t.responseTime !== null ? t.responseTime + ' ms' : '-'}</td>
-            <td>${t.correct ? 'Yes' : 'No'}</td>
-            <td>${t.block || 'practice'}</td>
+            <td>${trial.word}</td>
+            <td>${t[trial.type] || trial.type}</td>
+            <td>${trial.lang || '-'}</td>
+            <td>${t[trial.color] || trial.color}</td>
+            <td>${trial.responseKey || '-'}</td>
+            <td>${trial.responseTime !== null ? trial.responseTime + ' ms' : '-'}</td>
+            <td>${trial.correct ? t.yes : t.no}</td>
+            <td>${trial.block || t.practice}</td>
           </tr>
         `;
       }).join('');
 
       document.getElementById('results-content').innerHTML = `
         <div class="summary-box">
-          <h4>Overall Performance:</h4>
-          <p>Total trials: ${allTrials.length}</p>
-          <p>Responded: ${responded.length}</p>
-          <p>Accuracy: ${accuracy}%</p>
-          <p>Average RT (correct): ${avgRT} ms</p>
+          <h4>${t.overallPerformance}</h4>
+          <p>${t.totalTrials} ${allTrials.length}</p>
+          <p>${t.responded} ${responded.length}</p>
+          <p>${t.accuracy} ${accuracy}%</p>
+          <p>${t.averageRT} ${avgRT} ms</p>
         </div>
 
         <div class="summary-box">
-          <h4>Performance by Word Type:</h4>
-          <p><strong>Emotional Words:</strong> ${emotionalResponded.length} responded, ${emotionalAccuracy}% accuracy, ${emotionalAvgRT} ms average RT</p>
-          <p><strong>Neutral Words:</strong> ${neutralResponded.length} responded, ${neutralAccuracy}% accuracy, ${neutralAvgRT} ms average RT</p>
+          <h4>${t.performanceByType}</h4>
+          <p><strong>${t.emotionalWords}</strong> ${emotionalResponded.length} ${t.responded.toLowerCase()}, ${emotionalAccuracy}% ${t.accuracy.toLowerCase()}, ${emotionalAvgRT} ms ${t.averageRT.toLowerCase()}</p>
+          <p><strong>${t.neutralWords}</strong> ${neutralResponded.length} ${t.responded.toLowerCase()}, ${neutralAccuracy}% ${t.accuracy.toLowerCase()}, ${neutralAvgRT} ms ${t.averageRT.toLowerCase()}</p>
         </div>
 
-        <h4>Trial Details:</h4>
+        <h4>${t.trialDetails}</h4>
         <table class="results-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Word</th>
-              <th>Type</th>
-              <th>Language</th>
-              <th>Color</th>
-              <th>Response</th>
-              <th>RT</th>
-              <th>Correct</th>
-              <th>Block</th>
+              <th>${t.trialNumber}</th>
+              <th>${t.word}</th>
+              <th>${t.type}</th>
+              <th>${t.language}</th>
+              <th>${t.color}</th>
+              <th>${t.response}</th>
+              <th>${t.rt}</th>
+              <th>${t.correct}</th>
+              <th>${t.block}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -681,6 +859,10 @@
       }
     }
 
+    // Event listeners for language switching
+    document.getElementById('lang-en').addEventListener('click', () => updateLanguage('en'));
+    document.getElementById('lang-sv').addEventListener('click', () => updateLanguage('sv'));
+
     // Event listeners
     document.getElementById('email-submit-btn').addEventListener('click', () => {
       const email = document.getElementById('email-input').value.trim();
@@ -722,18 +904,19 @@
 
     document.addEventListener('click', function (e) {
       if (e.target && e.target.id === 'download-csv') {
-        const header = ['Trial', 'Word', 'Type', 'Language', 'Color', 'Response', 'RT (ms)', 'Correct', 'Block'];
+        const t = translations[currentLanguage];
+        const header = [t.trialNumber, t.word, t.type, t.language, t.color, t.response, t.rt, t.correct, t.block];
         
-        const rows = allTrials.map((t, i) => [
+        const rows = allTrials.map((trial, i) => [
           i + 1,
-          `"${t.word}"`,
-          t.type,
-          t.lang || '',
-          t.color,
-          t.responseKey || '',
-          t.responseTime !== null ? t.responseTime : '',
-          t.correct ? 'Yes' : 'No',
-          t.block || 'practice'
+          `"${trial.word}"`,
+          t[trial.type] || trial.type,
+          trial.lang || '',
+          t[trial.color] || trial.color,
+          trial.responseKey || '',
+          trial.responseTime !== null ? trial.responseTime : '',
+          trial.correct ? t.yes : t.no,
+          trial.block || t.practice
         ]);
         
         const csvContent = [header, ...rows].map(row => row.join(',')).join('\n');
@@ -751,5 +934,3 @@
   </script>
 </body>
 </html>
-
-
